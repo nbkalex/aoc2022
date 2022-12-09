@@ -1,16 +1,3 @@
-﻿void Rezolve(string input, int length)
-{
-  for (int i = 0; i < input.Length - length; i++)
-  {
-    if (input.Skip(i).Take(length).Distinct().Count() == length)
-    {
-      Console.WriteLine(i + length);
-      break;
-    }
-  }
-}
-
-string input = File.ReadAllText("input.txt");
-
-Rezolve(input, 4);
-Rezolve(input, 14);
+﻿string input = File.ReadAllText("input.txt");
+Console.WriteLine(Enumerable.Range(0, input.Length - 4).First(i => input.Skip(i).Take(4).Distinct().Count() == 4) + 4);
+Console.WriteLine(Enumerable.Range(0, input.Length - 14).First(i => input.Skip(i).Take(14).Distinct().Count() == 14) + 14);
