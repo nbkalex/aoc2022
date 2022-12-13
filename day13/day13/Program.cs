@@ -7,14 +7,9 @@ foreach (var pair in pairs)
     Console.WriteLine(list);
 }
 
-foreach (var pair in pairs)
-  if (!(pair[0] > pair[1]))
-    Console.Write(pairs.IndexOf(pair) + 1 + ",");
-
-Console.WriteLine();
 
 // Part 1
-Console.WriteLine(pairs.Where(p => !(p[0] > p[1])).Select(p => pairs.IndexOf(p) + 1).Sum());
+Console.WriteLine(pairs.Where(p => ValuesList.compare(p[0], p[1]) == -1).Select(p => pairs.IndexOf(p) + 1).Sum());
 
 // Part 2
 var lists = File.ReadAllLines("input.txt")
@@ -76,21 +71,20 @@ class ValuesList : List<object>, IComparable
     return val;
   }
 
-    public int CompareTo(object? obj)
-    {
-      if(this == (ValuesList)obj)
-        return 0;
-      else if(this > (ValuesList)obj)
-        return 1;
-      else return -1;
-    }
-
-    public static bool operator >(ValuesList a, ValuesList b)
+  public int CompareTo(object? obj)
   {
+    return compare(this, (ValuesList)obj);
+  }
+
+  public static int compare(ValuesList a, ValuesList b)
+  {
+    if(a == b)
+      return 0;
+
     for (int i = 0; i < a.Count; i++)
     {
       if (i == b.Count)
-        return true;
+        return 1;
 
       var v1List = a[i] as ValuesList;
       var v2List = b[i] as ValuesList;
@@ -99,12 +93,8 @@ class ValuesList : List<object>, IComparable
       {
         int first = (int)a[i];
         int second = (int)b[i];
-
-        if (first > second)
-          return true;
-
-        if (first < second)
-          return false;
+        if(first.CompareTo(second) != 0)
+          return first.CompareTo(second);
       }
       else
       {
@@ -113,63 +103,14 @@ class ValuesList : List<object>, IComparable
         if (v2List == null)
           v2List = new ValuesList() { (int)b[i] };
 
-        if (v1List == v2List)
+        if (compare(v1List, v2List) == 0)
           continue;
 
-        return v1List > v2List;
+        return compare(v1List, v2List);
       }
     }
 
-    return false;
+    return a.Count.CompareTo(b.Count);
   }
 
-  public static bool operator ==(ValuesList a, ValuesList b)
-  {
-    if (object.ReferenceEquals(a, null) && object.ReferenceEquals(b, null))
-      return true;
-
-    if (object.ReferenceEquals(a, null))
-      return false;
-
-    if (object.ReferenceEquals(b, null))
-      return false;
-
-    if (a.Count != b.Count) return false;
-
-    for (int i = 0; i < a.Count; i++)
-    {
-      var v1List = a[i] as ValuesList;
-      var v2List = b[i] as ValuesList;
-
-      if (v1List == null && v2List == null)
-      {
-        int first = (int)a[i];
-        int second = (int)b[i];
-        if(first != second)
-          return false;
-      }
-      else
-      {
-        if (v1List == null)
-          v1List = new ValuesList() { (int)a[i] };
-        if (v2List == null)
-          v2List = new ValuesList() { (int)b[i] };
-
-        if(v1List != v2List)
-          return false;
-      }
-    }
-
-    return true;
-  }
-
-  public static bool operator !=(ValuesList a, ValuesList b)
-  {
-    return !(a == b);
-  }
-
-  public static bool operator <(ValuesList a, ValuesList b)
-  {
-    return false;
-  }
 }
