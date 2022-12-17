@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-var tunnels = File.ReadAllLines("input.txt")
+var valves = File.ReadAllLines("input.txt")
   .Select(l =>
   {
     var tokensSpace = l.Split(" ");
@@ -13,59 +13,88 @@ var tunnels = File.ReadAllLines("input.txt")
   })
   .ToDictionary(t => t.Id, t => t);
 
-const int time = 30;
-Stack<(string, HashSet<string>, int, int)> toGo = new Stack<(string, HashSet<string>, int, int)>();
-HashSet<(string, HashSet<string>, int, int)> visited = new HashSet<(string, HashSet<string>, int, int)>();
+Dictionary<string, Dictionary<string, int>> distances = new Dictionary<string, Dictionary<string, int>>();
+distances.Add("AA", Distances("AA")
+  .Where(v => valves[v.Key].Rate != 0)
+  .ToDictionary(v => v.Key, v => v.Value));
 
-HashSet<string> startSet = new HashSet<string>();
-startSet.Add("AA");
-
-toGo.Push(("AA", new HashSet<string>(), time, 0));
-Dictionary<string, int> times = new Dictionary<string, int>();
-
-while (toGo.Any())
+foreach (var v in valves)
 {
-  var current = toGo.Pop();
-  if (current.Item3 <= 2)
+  if (v.Value.Rate == 0)
     continue;
 
-  string currentId = current.Item1.Substring(current.Item1.Length - 2);
+  distances.Add(v.Key, Distances(v.Key)
+    .Where(v => valves[v.Key].Rate != 0)
+    .ToDictionary(v => v.Key, v => v.Value));
+}
 
-  var openedValves = current.Item2;
-  int currentTime = current.Item3;
-  int currentPressure = current.Item4;
+//Console.WriteLine(distances["AA"]["HH"]);
 
-  var nextValves = tunnels[currentId].NextValves.Select(v => tunnels[v]);
+Stack<(string, HashSet<string>, int, int)> toVisit = new Stack<(string, HashSet<string>, int, int)>();
+toVisit.Push(("AA", new HashSet<string>(), 30, 0));
+List<(string, HashSet<string>, int, int)> visited = new List<(string, HashSet<string>, int, int)>();
 
-  foreach (var nextValve in nextValves)
+while (toVisit.Any())
+{
+  var current = toVisit.Pop();
+  var currentId = current.Item1;
+  var opened = current.Item2;
+  var currentTime = current.Item3;
+  var total = current.Item4;
+
+  if (currentTime < 2)
+    continue;
+
+  var closedValves = valves.Where(v => v.Value.Rate != 0 && !opened.Contains(v.Key)).ToList();
+
+  if (!closedValves.Any())
+    continue;
+
+  foreach (var cv in closedValves)
   {
-    string nextWay = current.Item1 + nextValve.Id;
-    if (nextValve.Rate > 0 && !openedValves.Contains(nextValve.Id))
-    {
-      var nextOpenedValves = new HashSet<string>(openedValves);
-      nextOpenedValves.Add(nextValve.Id);
-      int openedPresure = currentPressure + (currentTime - 2) * nextValve.Rate;
-
-      toGo.Push((nextWay, nextOpenedValves, currentTime - 2, openedPresure));
-      visited.Add((nextWay, nextOpenedValves, currentTime - 2, openedPresure));
-    }
-
-    toGo.Push((nextWay, new HashSet<string>(openedValves), currentTime - 1, currentPressure));
-    visited.Add((nextWay, new HashSet<string>(openedValves), currentTime - 1, currentPressure));
+    int nextTime = currentTime - distances[currentId][cv.Key] - 1;
+    int presure = cv.Value.Rate * nextTime;
+    var openedNext = new HashSet<string>(opened);
+    openedNext.Add(cv.Key);
+    int nextTotal = total + presure;
+    toVisit.Push((cv.Key, openedNext, nextTime, nextTotal));
+    visited.Add((cv.Key, openedNext, nextTime, nextTotal));
   }
 }
 
-int max = visited.Max(v => v.Item4);
+Console.WriteLine(visited.Max(v => v.Item4));
 
-var found = visited.First(v => v.Item4 == max);
+Dictionary<string, int> Distances(string start)
+{
+  Dictionary<string, int> distances = new Dictionary<string, int>();
+  distances.Add(start, 0);
+  Stack<(string, int)> to = new Stack<(string, int)>();
+  to.Push((start, 0));
+  while (to.Any())
+  {
+    var current = to.Pop();
+    string currentId = current.Item1;
+    int currentCost = current.Item2;
 
-var adcb = visited.Where(v => v.Item1.StartsWith("AADDCCBB")).ToList();
+    int nextCost = currentCost + 1;
+    foreach (var v in valves[current.Item1].NextValves)
+    {
+      if (distances.ContainsKey(v))
+      {
+        if (distances[v] < nextCost)
+          continue;
+        else
+          distances[v] = nextCost;
+      }
+      else
+        distances.Add(v, nextCost);
 
-Console.WriteLine(found.Item4);
+      to.Push((v, nextCost));
+    }
+  }
 
-Console.WriteLine();
-
-
+  return distances;
+}
 
 class Valve
 {
