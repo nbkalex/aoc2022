@@ -31,7 +31,7 @@ foreach (var v in valves)
 //Console.WriteLine(distances["AA"]["HH"]);
 
 Stack<(string, HashSet<string>, int, int)> toVisit = new Stack<(string, HashSet<string>, int, int)>();
-toVisit.Push(("AA", new HashSet<string>(), 30, 0));
+toVisit.Push(("AA", new HashSet<string>(), 26, 0));
 List<(string, HashSet<string>, int, int)> visited = new List<(string, HashSet<string>, int, int)>();
 
 while (toVisit.Any())
@@ -62,7 +62,33 @@ while (toVisit.Any())
   }
 }
 
+// Part 1
 Console.WriteLine(visited.Max(v => v.Item4));
+
+int max = 0;
+// Part 2
+for (int i = 0; i < visited.Count; i++)
+{
+  for (int j = i+1; j < visited.Count; j++)
+  {
+    var item = visited[i];
+    var item2 = visited[j];
+    bool intersects = false;
+    foreach (var opened in item.Item2)
+    {
+      if (item2.Item2.Contains(opened))
+      {
+        intersects = true;
+        break;
+      }
+    }
+
+    if (!intersects && max < item.Item4 + item2.Item4)
+      max = item.Item4 + item2.Item4;
+  }
+}
+
+Console.WriteLine(max);
 
 Dictionary<string, int> Distances(string start)
 {
