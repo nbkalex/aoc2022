@@ -28,24 +28,26 @@ foreach (var v in valves)
     .ToDictionary(v => v.Key, v => v.Value));
 }
 
+var relevantValves = distances.Keys.ToList();
+
 //Console.WriteLine(distances["AA"]["HH"]);
 
-Stack<(string, HashSet<string>, int, int)> toVisit = new Stack<(string, HashSet<string>, int, int)>();
-toVisit.Push(("AA", new HashSet<string>(), 26, 0));
-List<(string, HashSet<string>, int, int)> visited = new List<(string, HashSet<string>, int, int)>();
+Stack<(string, int, int, int)> toVisit = new Stack<(string, int, int, int)>();
+toVisit.Push(("AA", 0, 30, 0));
+List<(string, int, int, int)> visited = new List<(string, int, int, int)>();
 
 while (toVisit.Any())
 {
   var current = toVisit.Pop();
   var currentId = current.Item1;
-  var opened = current.Item2;
+  int opened = current.Item2;
   var currentTime = current.Item3;
   var total = current.Item4;
 
   if (currentTime < 2)
     continue;
-
-  var closedValves = valves.Where(v => v.Value.Rate != 0 && !opened.Contains(v.Key)).ToList();
+    
+  var closedValves = valves.Where(v => v.Value.Rate != 0 && (opened >> relevantValves.IndexOf(v.Key) & 1) == 0).ToList();
 
   if (!closedValves.Any())
     continue;
@@ -54,8 +56,8 @@ while (toVisit.Any())
   {
     int nextTime = currentTime - distances[currentId][cv.Key] - 1;
     int presure = cv.Value.Rate * nextTime;
-    var openedNext = new HashSet<string>(opened);
-    openedNext.Add(cv.Key);
+    var openedNext = opened;
+    openedNext |= 1 << relevantValves.IndexOf(cv.Key);
     int nextTotal = total + presure;
     toVisit.Push((cv.Key, openedNext, nextTime, nextTotal));
     visited.Add((cv.Key, openedNext, nextTime, nextTotal));
@@ -72,18 +74,8 @@ for (int i = 0; i < visited.Count; i++)
   for (int j = i+1; j < visited.Count; j++)
   {
     var item = visited[i];
-    var item2 = visited[j];
-    bool intersects = false;
-    foreach (var opened in item.Item2)
-    {
-      if (item2.Item2.Contains(opened))
-      {
-        intersects = true;
-        break;
-      }
-    }
-
-    if (!intersects && max < item.Item4 + item2.Item4)
+    var item2 = visited[j];    
+    if ((item.Item2 & item2.Item2) == 0 && max < item.Item4 + item2.Item4)
       max = item.Item4 + item2.Item4;
   }
 }
