@@ -47,9 +47,6 @@ while (toVisit.Any())
   var currentTime = current.Item3;
   var total = current.Item4;
 
-  if (currentTime < 2)
-    continue;
-
   var closedValves = valves.Where(v => v.Value.Rate != 0 && (opened >> relevantValves.IndexOf(v.Key) & 1) == 0).ToList();
 
   if (!closedValves.Any())
@@ -62,8 +59,12 @@ while (toVisit.Any())
     var openedNext = opened;
     openedNext |= 1 << relevantValves.IndexOf(cv.Key);
     int nextTotal = total + presure;
-    toVisit.Push((cv.Key, openedNext, nextTime, nextTotal));
-    visited.Add((cv.Key, openedNext, nextTime, nextTotal));
+
+    if (nextTime > 0)
+    {
+      toVisit.Push((cv.Key, openedNext, nextTime, nextTotal));
+      visited.Add((cv.Key, openedNext, nextTime, nextTotal));
+    }
   }
 }
 
