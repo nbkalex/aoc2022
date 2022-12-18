@@ -1,5 +1,8 @@
 ﻿using System.Collections;
 
+var startTime = DateTime.Now;
+Console.WriteLine(startTime);
+
 var valves = File.ReadAllLines("input.txt")
   .Select(l =>
   {
@@ -33,7 +36,7 @@ var relevantValves = distances.Keys.ToList();
 //Console.WriteLine(distances["AA"]["HH"]);
 
 Stack<(string, int, int, int)> toVisit = new Stack<(string, int, int, int)>();
-toVisit.Push(("AA", 0, 30, 0));
+toVisit.Push(("AA", 0, 26, 0));
 List<(string, int, int, int)> visited = new List<(string, int, int, int)>();
 
 while (toVisit.Any())
@@ -46,7 +49,7 @@ while (toVisit.Any())
 
   if (currentTime < 2)
     continue;
-    
+
   var closedValves = valves.Where(v => v.Value.Rate != 0 && (opened >> relevantValves.IndexOf(v.Key) & 1) == 0).ToList();
 
   if (!closedValves.Any())
@@ -67,20 +70,22 @@ while (toVisit.Any())
 // Part 1
 Console.WriteLine(visited.Max(v => v.Item4));
 
-int max = 0;
 // Part 2
+int max = 0;
 for (int i = 0; i < visited.Count; i++)
 {
-  for (int j = i+1; j < visited.Count; j++)
+  for (int j = i + 1; j < visited.Count; j++)
   {
     var item = visited[i];
-    var item2 = visited[j];    
+    var item2 = visited[j];
     if ((item.Item2 & item2.Item2) == 0 && max < item.Item4 + item2.Item4)
       max = item.Item4 + item2.Item4;
   }
 }
 
 Console.WriteLine(max);
+Console.WriteLine((DateTime.Now - startTime).Seconds);
+Console.WriteLine(DateTime.Now);
 
 Dictionary<string, int> Distances(string start)
 {
