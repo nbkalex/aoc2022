@@ -26,7 +26,7 @@ bool display = false;
 
 //Console.ReadKey();
 //int coutFall = 1;
-while (shapesCount <= 2022)
+while (shapesCount <= 100000)
 {
   if(!falling)
   {
@@ -70,6 +70,11 @@ while (shapesCount <= 2022)
     }
 
     windIndex++;
+    if(windIndex % wind.Length == 0)
+    {
+      Console.WriteLine(shapesCount + ", height: " + currentHeight);
+    }
+
     // fall
     if (/*coutFall > 3 || */shapeFalling.Any(b => falledRocksBits.Contains(new Point(b.X, b.Y-1)) || b.Y - 1 <= 0))
     { 
@@ -112,5 +117,12 @@ while (shapesCount <= 2022)
   } 
 }
 
+// Part 1
 Console.WriteLine(currentHeight);
 
+// Part 2
+// nr of stones / cicle = 1714, 3434, 5154, 6874
+// next shape 1714 % 5 = 4
+
+// (1000000000000 - 1714) / 1720
+// 
