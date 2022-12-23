@@ -8,11 +8,13 @@ for (int i = 0; i < lines.Length - 1; i++)
     if (lines[i][j] != ' ')
       map.Add(new Point(j + 1, i + 1), lines[i][j]);
 
-//foreach (var p in map.Keys)
-//{
-//  Console.SetCursorPosition(p.X, p.Y);
-//  Console.Write(map[p]);
-//}
+Console.SetBufferSize(10000,10000);
+
+foreach (var p in map)
+{
+  Console.SetCursorPosition(p.Key.X, p.Key.Y);
+  Console.Write(p.Value);
+}
 
 var path = lines.Last();
 
@@ -47,14 +49,10 @@ while (currentPathIndex < path.Length)
     currentPathIndex++;
   }
 
-  Point direction = directions[currentDirectionIndex % directions.Count];
-  //Console.SetCursorPosition(currentPos.X, currentPos.Y);
-  //Console.WriteLine(directionsDisplay[currentDirectionIndex % directions.Count] );
-  //Console.ReadKey();
-
   int stepsCount = int.Parse(stepts);
   for (int step = 0; step < stepsCount; step++)
   {
+    Point direction = directions[currentDirectionIndex % directions.Count];
     Point nextPos = new Point(currentPos.X + direction.X, currentPos.Y + direction.Y);
     if (map.ContainsKey(nextPos))
     {
@@ -65,20 +63,123 @@ while (currentPathIndex < path.Length)
     }
     else
     {
-      nextPos = currentPos;
-      while (map.ContainsKey(nextPos))
-        nextPos = new Point(nextPos.X - direction.X, nextPos.Y - direction.Y);
+      int dirIndex = -1;
+      int x = nextPos.X, y = nextPos.Y;
+      // 11111111
+      if (y < 1 && x >= 49 && x <= 100)
+      {
+        nextPos.X = 1;
+        nextPos.Y = x + 100;
+        dirIndex = 0;
+      }
 
-      nextPos = new Point(nextPos.X + direction.X, nextPos.Y + direction.Y);
+      else if (y > 150 && x < 1)
+      {
+        nextPos.X = y - 100;
+        nextPos.Y = 1;
+        dirIndex = 1;
+      }
+      //--------------------------------------------------------
+      //22222222222222222
+      else if (x <= 50 && y <= 50)
+      {
+        nextPos.X = 1;
+        nextPos.Y = 150 - y;
+        dirIndex = 0;
+      }
+
+      else if (x < 1 && y <= 150)
+      {
+        nextPos.X = 51;
+        nextPos.Y = 150 - y;
+        dirIndex = 0;
+      }
+      // ----------------------------------------------------------
+      //33333333333333
+      else if (x <= 50 && y <= 100)
+      {
+        nextPos.X = y - 50;
+        nextPos.Y = 101;
+        dirIndex = 1;
+      }
+
+      else if (x <= 50 && y <= 100)
+      {
+        nextPos.X = 51;
+        nextPos.Y = x + 50;
+        dirIndex = 0;
+      }
+
+      // ------------------------------------------------------------
+      //4444444444444444
+      else if (x <= 150 && y < 1)
+      {
+        nextPos.X = x - 100;
+        nextPos.Y = 200;
+        dirIndex = 3;
+      }
+      else if (x <= 50 && y > 200)
+      {
+        nextPos.X = x + 100;
+        nextPos.Y = 1;
+        dirIndex = 1;
+      }
+
+      // ---------------------------------------------------------
+      //55555555555555555555
+      else if (x > 150)
+      {
+        nextPos.Y = 150 - y;
+        nextPos.X = 100;
+        dirIndex = 2;
+      }
+      else if (x > 100 && y > 100 && y <= 150)
+      {
+        nextPos.Y = 150 - y;
+        nextPos.X = 150;
+        dirIndex = 2;
+      }
+
+      // ---------------------------------------------------------
+      //6666666666666666666666666
+      else if (x > 100 && y > 50)
+      {
+        nextPos.X = 100;
+        nextPos.Y = x - 50;
+        dirIndex = 2;
+      }
+      else if (x > 100 && y > 50 && y <= 100)
+      {
+        nextPos.X = y + 50;
+        nextPos.Y = 50;
+        dirIndex = 3;
+      }
+
+      // ---------------------------------------------------------
+      //777777777777777777777777777777777
+      else if (y > 150 && x > 50)
+      {
+        nextPos.Y = 100 + x;
+        nextPos.X = 50;
+        dirIndex = 2;
+      }
+      else if (y > 150 && x == 50)
+      {
+        nextPos.X = y - 100;
+        nextPos.Y = 150;
+        dirIndex = 3;
+      }
 
       if (map[nextPos] == '#')
         break;
+
+      currentDirectionIndex = dirIndex;
       currentPos = nextPos;
     }
 
-    //Console.SetCursorPosition(currentPos.X, currentPos.Y);
-    //Console.WriteLine(directionsDisplay[Math.Abs(currentDirectionIndex)]);
-    //Console.ReadKey();
+    Console.SetCursorPosition(currentPos.X, currentPos.Y);
+    Console.Write(directionsDisplay[currentDirectionIndex % 4]);
+    Console.ReadKey();
   }
 
   if (currentPathIndex < path.Length)
@@ -86,7 +187,7 @@ while (currentPathIndex < path.Length)
     if (path[currentPathIndex] == 'R')
       currentDirectionIndex++;
     else
-    {      
+    {
       currentDirectionIndex--;
       if (currentDirectionIndex < 0)
         currentDirectionIndex = 3;
@@ -95,4 +196,8 @@ while (currentPathIndex < path.Length)
   }
 }
 
-Console.WriteLine(((1000 * currentPos.Y) + (4 * currentPos.X) + (Math.Abs(currentDirectionIndex) % 4)).ToString());
+Console.WriteLine(1000 * currentPos.Y + 4 * currentPos.X + (Math.Abs(currentDirectionIndex) % 4));
+
+// 149345 too high
+// 148341 too high
+// 120375 too low
