@@ -24,9 +24,7 @@ while (sum > 0)
   index++;
 }
 
-for (int i = digits.Count-1; i >= 0; i--)
-  Update(digits, i);
-
+Update(digits, digits.Count - 1);
 
 var cMapRev = new Dictionary<long, char>()
 {
@@ -42,17 +40,18 @@ foreach (long d in digits)
 
 void Update(List<long> aDigits, int aIndex)
 {
+  if(aIndex < 0)
+    return;
+
   if (aDigits[aIndex] > 2)
   {
     aDigits[aIndex] = aDigits[aIndex] - 5;
 
-    aIndex--;
-    if (aIndex == -1)
+    if (aIndex == 0)
       aDigits.Insert(0,1);
     else
-    {
-      aDigits[aIndex]++;
-      Update(aDigits, aIndex);
-    }
+      aDigits[aIndex-1]++;
   }
+
+  Update(aDigits, --aIndex);
 }
