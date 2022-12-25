@@ -16,7 +16,7 @@ var directions = new Dictionary<char, Point>
 
 
 var walls = map.Keys.Where(mp => map[mp] == '#').ToHashSet();
-var currentPoint = new Point(1,0);
+var currentPoint = new Point(1, 0);
 var blizzards = map.Keys.Where(mp => directions.ContainsKey(map[mp])).ToList();
 
 var width = walls.Max(w => w.X) - walls.Min(w => w.X) - 1;
@@ -33,57 +33,76 @@ Dictionary<string, int> visited = new Dictionary<string, int>();
 
 //PrintMap(currentPoint, blizzards.Select(b => (b, map[b])).ToList());
 
-while (toGo.Any())
+Point destination = new Point(width, height + 1);
+for (int tripCount = 0; tripCount < 3; tripCount++)
 {
-  var current = toGo.Pop();
-  Point currentPos = current.Item1;
-  int currentTime = current.Item2;
-  currentTime++;
 
-  if (currentTime >= minTime)
-    continue;
+  while (toGo.Any())
+  {
+    var current = toGo.Pop();
+    Point currentPos = current.Item1;
+    int currentTime = current.Item2;
+    currentTime++;
 
-  string hash = currentPos.X + " " + currentPos.Y + " " + (currentTime % width).ToString() + " " + (currentTime % height).ToString();
-  if (visited.ContainsKey(hash))
-    if (visited[hash] <= currentTime)
+    if (currentTime >= minTime)
       continue;
+
+    string hash = currentPos.X + " " + currentPos.Y + " " + (currentTime % width).ToString() + " " + (currentTime % height).ToString();
+    if (visited.ContainsKey(hash))
+      if (visited[hash] <= currentTime)
+        continue;
+      else
+        visited[hash] = currentTime;
     else
-      visited[hash] = currentTime;
+      visited.Add(hash, currentTime);
+
+    if (currentPos.Y == destination.Y)
+    {
+      Console.WriteLine(currentTime);
+      if (currentTime < minTime)
+        minTime = currentTime;
+    }
+
+    var currentBlizzardsWithDir = new List<(Point, char)>();
+    foreach (var b in blizzards)
+    {
+      var newPoint = new Point(b.X + (currentTime * directions[map[b]].X), b.Y + (currentTime * directions[map[b]].Y));
+      currentBlizzardsWithDir.Add((ProjectPoint(newPoint), map[b]));
+    }
+
+    var currentBlizzards = currentBlizzardsWithDir.Select(b => b.Item1).ToHashSet();
+    var newAvailablePositions = directions.Values
+      .Select(d => new Point(currentPos.X + d.X, currentPos.Y + d.Y))
+      .Where(p => map.ContainsKey(p) && map[p] != '#' && !currentBlizzards.Contains(p))
+      .ToList();
+
+    if (!currentBlizzards.Contains(currentPos))
+      newAvailablePositions.Add(currentPos); // wait
+    newAvailablePositions = newAvailablePositions.OrderByDescending(nap => Math.Abs(destination.X - nap.X) + Math.Abs(destination.Y - nap.Y)).ToList();
+    //PrintMap(currentPos, currentBlizzardsWithDir);
+    foreach (var p in newAvailablePositions)
+    {
+      //PrintMap(p, currentBlizzardsWithDir);
+      toGo.Push((p, currentTime));
+    }
+  }
+
+  Console.WriteLine("final trip min time: " + (minTime - 1));
+  
+  if(tripCount == 0)
+  {
+    toGo.Push((destination, minTime-1));
+    destination = new Point(1, 0);
+  }
   else
-    visited.Add(hash, currentTime);
-
-  if (currentPos.Y == maxY)
-  {
-    Console.WriteLine(currentTime);
-    if (currentTime < minTime)
-      minTime = currentTime;
+  { 
+    toGo.Push((new Point(1, 0), minTime-1));
+    destination = new Point(width, height + 1);
   }
 
-  var currentBlizzardsWithDir = new List<(Point, char)>();
-  foreach (var b in blizzards)
-  {
-    var newPoint = new Point(b.X + (currentTime * directions[map[b]].X), b.Y + (currentTime * directions[map[b]].Y));
-    currentBlizzardsWithDir.Add((ProjectPoint(newPoint), map[b]));
-  }
-
-  var currentBlizzards = currentBlizzardsWithDir.Select(b => b.Item1).ToHashSet();
-  var newAvailablePositions = directions.Values
-    .Select(d => new Point(currentPos.X + d.X, currentPos.Y + d.Y))
-    .Where(p => map.ContainsKey(p) && map[p] != '#' && !currentBlizzards.Contains(p))
-    .ToList();
-
-  if(!currentBlizzards.Contains(currentPos))
-    newAvailablePositions.Add(currentPos); // wait
-  newAvailablePositions = newAvailablePositions.OrderByDescending(nap => width - nap.X + height - nap.Y).ToList();
-  //PrintMap(currentPos, currentBlizzardsWithDir);
-  foreach (var p in newAvailablePositions)
-  {
-    //PrintMap(p, currentBlizzardsWithDir);
-    toGo.Push((p, currentTime));
-  }
+  minTime = int.MaxValue;
+  visited.Clear();
 }
-
-Console.WriteLine(minTime -1);
 
 Point ProjectPoint(Point p)
 {
@@ -91,12 +110,12 @@ Point ProjectPoint(Point p)
   int y = p.Y;
 
   if (x > 0)
-    x = (x-1) % width + 1;
+    x = (x - 1) % width + 1;
   else
     x = width - (Math.Abs(x) % width);
 
   if (y > 0)
-    y = (y-1) % height + 1;
+    y = (y - 1) % height + 1;
   else
     y = height - (Math.Abs(y) % height);
 
