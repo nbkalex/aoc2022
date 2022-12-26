@@ -13,7 +13,7 @@
   }).ToList();
 
 
-const int kMinutes = 24;
+const int kMinutes = 32;
 const int kOreIndex = 0;
 const int kClayIndex = 1;
 const int kObsidianOreIndex = 2;
@@ -38,7 +38,7 @@ foreach (var blueprint in blueprints)
     List<int> res = option.Item2;
     List<int> robots = option.Item3;
 
-    if (time == 23)
+    if (time == kMinutes-1)
     {
       if (res[3] + robots[3] > maxGeodes)
         maxGeodes = res[3] + robots[3];
@@ -56,7 +56,7 @@ foreach (var blueprint in blueprints)
 
       neededTime++;
 
-      if (time + neededTime == 24)
+      if (time + neededTime == kMinutes)
       {
         if (newRes[3] > maxGeodes)
           maxGeodes = newRes[3];
@@ -65,7 +65,7 @@ foreach (var blueprint in blueprints)
       }
     }
 
-    if (time + neededTime + 1 < 24)
+    if (time + neededTime + 1 < kMinutes)
     {
       for (int i = 0; i < 4; i++)
         newRes[i] += robots[i];
@@ -86,7 +86,7 @@ foreach (var blueprint in blueprints)
 
       neededTime++;
 
-      if (time + neededTime == 24)
+      if (time + neededTime == kMinutes)
       {
         if (newRes[3] > maxGeodes)
           maxGeodes = newRes[3];
@@ -95,7 +95,7 @@ foreach (var blueprint in blueprints)
       }
     }
 
-    if (time + neededTime + 1 < 24)
+    if (time + neededTime + 1 < kMinutes)
     {
       for (int i = 0; i < 4; i++)
         newRes[i] += robots[i];
@@ -118,7 +118,7 @@ foreach (var blueprint in blueprints)
 
         neededTime++;
 
-        if (time + neededTime == 24)
+        if (time + neededTime == kMinutes)
         {
           if (newRes[3] > maxGeodes)
             maxGeodes = newRes[3];
@@ -127,7 +127,7 @@ foreach (var blueprint in blueprints)
         }
       }
 
-      if (time + neededTime + 1 < 24)
+      if (time + neededTime + 1 < kMinutes)
       {
         for (int i = 0; i < 4; i++)
           newRes[i] += robots[i];
@@ -152,7 +152,7 @@ foreach (var blueprint in blueprints)
 
         neededTime++;
 
-        if (time + neededTime == 24)
+        if (time + neededTime == kMinutes)
         {
           if (newRes[3] > maxGeodes)
             maxGeodes = newRes[3];
@@ -161,7 +161,7 @@ foreach (var blueprint in blueprints)
         }
       }
 
-      if (time + neededTime + 1 < 24)
+      if (time + neededTime + 1 < kMinutes)
       {
         for (int i = 0; i < 4; i++)
           newRes[i] += robots[i];
