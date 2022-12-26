@@ -1,4 +1,4 @@
-﻿var blueprinsts = File.ReadAllLines("input.txt")
+﻿var blueprints = File.ReadAllLines("input.txt")
   .Select(l =>
   {
     var tokens = l.Split(" ");
@@ -21,103 +21,161 @@ const int kObsidianClayIndex = 3;
 const int kGeodeOreIndex = 4;
 const int kGeodeObsidianIndex = 5;
 
-foreach (var blueprint in blueprinsts)
+int totalScore = 0;
+
+foreach (var blueprint in blueprints)
 {
   Stack<(int, List<int>, List<int>)> options = new Stack<(int, List<int>, List<int>)>();
-  options.Push((kMinutes, new List<int>() { 0, 0, 0, 0 }, new List<int>() { 1, 0, 0, 0 }));
+  options.Push((0, new List<int>() { 0, 0, 0, 0 }, new List<int>() { 1, 0, 0, 0 }));
 
-  List<int> geordesCounts = new List<int>();
-  List<(int, List<int>, List<int>)> allOptions = new List<(int, List<int>, List<int>)>();
+  int maxGeodes = 0;
+  Dictionary<int, int> minTimeGeodes = new Dictionary<int, int>();
   while (options.Any())
   {
     var option = options.Pop();
-    var init_res = new List<int>(option.Item2);
-    var init_robots = new List<int>(option.Item3);
 
     int time = option.Item1;
-    time--;
+    List<int> res = option.Item2;
+    List<int> robots = option.Item3;
 
-    var res = new List<int>(option.Item2);
-    var robots = new List<int>(option.Item3);
-    for (int i = 0; i < 4; i++)
-      res[i] += robots[i];
-
-    if (time == 0)
+    if (time == 23)
     {
-      if (res[3] > 0)
-        geordesCounts.Add(res[3]);
+      if (res[3] + robots[3] > maxGeodes)
+        maxGeodes = res[3] + robots[3];
       continue;
     }
 
-    options.Push((time, res, robots));
-
-    if (init_res[0] >= blueprint[kOreIndex])
+    // build ore
+    int neededTime = 0;
+    List<int> newRes = new List<int>(res);
+    List<int> newRobots = new List<int>(robots);
+    while (newRes[0] < blueprint[kOreIndex])
     {
-      if (time == 1)
+      for (int i = 0; i < 4; i++)
+        newRes[i] += robots[i];
+
+      neededTime++;
+
+      if (time + neededTime == 24)
       {
-        if (robots[3] > 0)
-          geordesCounts.Add(res[3] + robots[3]);
-      }
-      else
-      {
-        var newrobots = new List<int>(option.Item3);
-        newrobots[0]++;
-        var newRes = new List<int>(res);
-        newRes[0] -= blueprint[kOreIndex];
-        options.Push((time, newRes, newrobots));
+        if (newRes[3] > maxGeodes)
+          maxGeodes = newRes[3];
+
+        break;
       }
     }
 
-    if (init_res[0] >= blueprint[kClayIndex])
+    if (time + neededTime + 1 < 24)
     {
-      if (time == 1)
+      for (int i = 0; i < 4; i++)
+        newRes[i] += robots[i];
+
+      newRes[0] -= blueprint[kOreIndex];
+      newRobots[0]++;
+      options.Push((time + neededTime + 1, newRes, newRobots));
+    }
+
+    // build clay
+    neededTime = 0;
+    newRes = new List<int>(res);
+    newRobots = new List<int>(robots);
+    while (newRes[0] < blueprint[kClayIndex])
+    {
+      for (int i = 0; i < 4; i++)
+        newRes[i] += robots[i];
+
+      neededTime++;
+
+      if (time + neededTime == 24)
       {
-        if (robots[3] > 0)
-          geordesCounts.Add(res[3] + robots[3]);
-      }
-      else
-      {
-        var newrobots = new List<int>(option.Item3);
-        var newRes = new List<int>(res);
-        newRes[0] -= blueprint[kClayIndex];
-        newrobots[1]++;
-        options.Push((time, newRes, newrobots));
+        if (newRes[3] > maxGeodes)
+          maxGeodes = newRes[3];
+
+        break;
       }
     }
 
-    if (init_res[0] > blueprint[kObsidianOreIndex] && init_res[1] >= blueprint[kObsidianClayIndex])
+    if (time + neededTime + 1 < 24)
     {
-      if (time == 1)
+      for (int i = 0; i < 4; i++)
+        newRes[i] += robots[i];
+
+      newRes[0] -= blueprint[kClayIndex];
+      newRobots[1]++;
+      options.Push((time + neededTime + 1, newRes, newRobots));
+    }
+
+    // build obsidian
+    if (robots[1] > 0)
+    {
+      neededTime = 0;
+      newRes = new List<int>(res);
+      newRobots = new List<int>(robots);
+      while (newRes[0] < blueprint[kObsidianOreIndex] || newRes[1] < blueprint[kObsidianClayIndex])
       {
-        if (robots[3] > 0)
-          geordesCounts.Add(res[3] + robots[3]);
+        for (int i = 0; i < 4; i++)
+          newRes[i] += robots[i];
+
+        neededTime++;
+
+        if (time + neededTime == 24)
+        {
+          if (newRes[3] > maxGeodes)
+            maxGeodes = newRes[3];
+
+          break;
+        }
       }
-      else
+
+      if (time + neededTime + 1 < 24)
       {
-        var newrobots = new List<int>(option.Item3);
-        newrobots[2]++;
-        var newRes = new List<int>(res);
+        for (int i = 0; i < 4; i++)
+          newRes[i] += robots[i];
+
         newRes[0] -= blueprint[kObsidianOreIndex];
         newRes[1] -= blueprint[kObsidianClayIndex];
-        options.Push((time, newRes, newrobots));
+        newRobots[2]++;
+        options.Push((time + neededTime + 1, newRes, newRobots));
       }
     }
 
-    if (init_res[0] > blueprint[kGeodeOreIndex] && init_res[2] >= blueprint[kGeodeObsidianIndex])
+    // build geode
+    if (robots[2] > 0)
     {
-      if (time == 1)
-        geordesCounts.Add(res[3] + robots[3] + 1);
-      else
+      neededTime = 0;
+      newRes = new List<int>(res);
+      newRobots = new List<int>(robots);
+      while (newRes[0] < blueprint[kGeodeOreIndex] || newRes[2] < blueprint[kGeodeObsidianIndex])
       {
-        var newrobots = new List<int>(option.Item3);
-        newrobots[3]++;
-        var newRes = new List<int>(res);
+        for (int i = 0; i < 4; i++)
+          newRes[i] += robots[i];
+
+        neededTime++;
+
+        if (time + neededTime == 24)
+        {
+          if (newRes[3] > maxGeodes)
+            maxGeodes = newRes[3];
+
+          break;
+        }
+      }
+
+      if (time + neededTime + 1 < 24)
+      {
+        for (int i = 0; i < 4; i++)
+          newRes[i] += robots[i];
+
         newRes[0] -= blueprint[kGeodeOreIndex];
         newRes[2] -= blueprint[kGeodeObsidianIndex];
-        options.Push((time, newRes, newrobots));
+        newRobots[3]++;
+        options.Push((time + neededTime + 1, newRes, newRobots));
       }
     }
   }
 
-  Console.WriteLine(geordesCounts.Max());
+  Console.WriteLine(maxGeodes);
+  totalScore += maxGeodes * (blueprints.IndexOf(blueprint) + 1);
 }
+
+Console.WriteLine(totalScore);
