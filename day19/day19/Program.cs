@@ -30,6 +30,7 @@ foreach (var blueprint in blueprints)
 
   int maxGeodes = 0;
   Dictionary<int, int> minTimeGeodes = new Dictionary<int, int>();
+  Dictionary<string, int> resoursesAtTime = new Dictionary<string, int>();
   while (options.Any())
   {
     var option = options.Pop();
@@ -37,6 +38,20 @@ foreach (var blueprint in blueprints)
     int time = option.Item1;
     List<int> res = option.Item2;
     List<int> robots = option.Item3;
+
+    string hash = string.Join(" ", res.Select(r => r.ToString())) 
+      + " " + string.Join(" ", robots.Select(r => r.ToString()));
+    if(resoursesAtTime.ContainsKey(hash))
+    {
+      if (resoursesAtTime[hash] < time)
+        continue; 
+      else
+        resoursesAtTime[hash] = time;
+    }
+    else
+    {
+      resoursesAtTime.Add(hash, time);
+    }
 
     if (time == kMinutes-1)
     {
